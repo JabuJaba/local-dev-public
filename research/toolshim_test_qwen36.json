@@ -1,0 +1,70 @@
+{
+  "test_date": "2026-05-02",
+  "sprint": "15",
+  "model": "qwen3.6:35b-a3b-q4_k_m",
+  "ollama_endpoint": "http://localhost:11434",
+  "tests": [
+    {
+      "id": "T1_api_chat_anthropic_format",
+      "endpoint": "/api/chat",
+      "tool_format": "input_schema (Anthropic)",
+      "result": "WRONG_TOOL",
+      "model_emitted": "tool_calls[code_interpreter]",
+      "expected": "tool_calls[Read]",
+      "note": "Ollama /api/chat does not understand input_schema; model hallucinated code_interpreter tool"
+    },
+    {
+      "id": "T2_api_chat_openai_format",
+      "endpoint": "/api/chat",
+      "tool_format": "parameters (OpenAI native)",
+      "result": "PASS",
+      "model_emitted": "tool_calls[Read] with correct file_path argument",
+      "expected": "tool_calls[Read]",
+      "note": "Correct format for Ollama /api/chat; model emits tool_calls in OpenAI format"
+    },
+    {
+      "id": "T3_v1_messages_anthropic_endpoint",
+      "endpoint": "/v1/messages",
+      "tool_format": "input_schema (Anthropic)",
+      "result": "PASS",
+      "model_emitted": "[{type:thinking, len:~148}, {type:tool_use, name:Read, input:{file_path:...}}]",
+      "stop_reason": "tool_use",
+      "expected": "tool_use block with correct input",
+      "note": "Anthropic endpoint works; thinking block always present (~148 tokens); cannot be disabled"
+    },
+    {
+      "id": "T4_v1_messages_no_think",
+      "endpoint": "/v1/messages",
+      "tool_format": "input_schema (Anthropic)",
+      "thinking_control": "/no_think in user message",
+      "result": "PARTIAL",
+      "model_emitted": "[{type:thinking, len:953}, {type:tool_use, name:Read}]",
+      "note": "/no_think reduces thinking content but does NOT eliminate thinking block from response"
+    },
+    {
+      "id": "T5_v1_messages_thinking_disabled",
+      "endpoint": "/v1/messages",
+      "tool_format": "input_schema (Anthropic)",
+      "thinking_control": "thinking:{type:disabled} in request body",
+      "result": "PARTIAL",
+      "model_emitted": "[{type:thinking, len:453}, {type:tool_use, name:Read}]",
+      "note": "Anthropic thinking disabled flag not honored by Ollama shim; thinking block still present"
+    },
+    {
+      "id": "T6_api_chat_options_think_false",
+      "endpoint": "/api/chat",
+      "tool_format": "parameters (OpenAI native)",
+      "thinking_control": "options:{think:false}",
+      "result": "PASS_WITH_THINKING",
+      "model_emitted": "tool_calls[Read] correct; thinking_len=719",
+      "note": "think:false option not honored by qwen3.6; thinking content always generated"
+    }
+  ],
+  "conclusions": {
+    "shim_works": true,
+    "thinking_mode_disableable": false,
+    "tool_call_format_correct": "OpenAI (parameters) for /api/chat; Anthropic (input_schema) for /v1/messages",
+    "v1_messages_response_structure": "[{type:thinking}, {type:tool_use}]",
+    "hypothesis": "Thinking block in response may interfere with Claude Code CLI response parser. Claude Code may not handle thinking blocks from non-Anthropic models correctly."
+  }
+}

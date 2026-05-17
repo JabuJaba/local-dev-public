@@ -1,0 +1,313 @@
+# Sprint 3 Phase 4 — backlog sintético E2E (36 tasks)
+# Sandboxes: <workspace>/<game-bot>_sprint3_sandbox/ e <workspace>/<gaming-analytics>_sprint3_sandbox/
+# Originais NUNCA são tocados. Tasks always_claude têm sprint files em sprints/claude_tasks/.
+#
+# Distribuição:
+#   12 always_local  (6 <game-bot> + 6 cs2)
+#   12 try_local_first (6 <game-bot> + 6 cs2)
+#    6 destructive_local (3 <game-bot> + 3 cs2 — JSONL com isolated:true)
+#    6 always_claude (3 <game-bot> + 3 cs2 — handoff direto, sprint docs em sprints/claude_tasks/)
+
+tasks:
+
+# === ALWAYS_LOCAL (12) ===
+
+- id: s3-al-01
+  priority: 1
+  project: <game-bot>_sprint3_sandbox
+  task_type: read_only
+  status: pending
+  task: 'Leia core/config.py e responda em uma linha qual classe principal define a configuração do pipeline.'
+  test_cmd: null
+
+- id: s3-al-02
+  priority: 1
+  project: <game-bot>_sprint3_sandbox
+  task_type: read_only
+  status: pending
+  task: 'Liste em texto puro todos os arquivos .py em modules/payment.'
+  test_cmd: null
+
+- id: s3-al-03
+  priority: 1
+  project: <game-bot>_sprint3_sandbox
+  task_type: bash_safe
+  status: pending
+  task: 'Use Bash para contar quantas linhas tem core/database.py e reporte o número.'
+  test_cmd: null
+
+- id: s3-al-04
+  priority: 1
+  project: <game-bot>_sprint3_sandbox
+  task_type: small_write
+  status: pending
+  task: 'Crie scripts/sprint3_marker.py com o conteúdo: print("sprint3 <game-bot> ok")'
+  test_cmd: 'python -c "import os; assert os.path.exists(''scripts/sprint3_marker.py''); print(''PASS'')"'
+
+- id: s3-al-05
+  priority: 1
+  project: <game-bot>_sprint3_sandbox
+  task_type: simple_edit
+  status: pending
+  task: 'Edite core/__init__.py adicionando como primeira linha o comentário: # sprint3-marker'
+  test_cmd: 'python -c "assert open(''core/__init__.py'',encoding=''utf-8'').readline().strip()==''# sprint3-marker''; print(''PASS'')"'
+
+- id: s3-al-06
+  priority: 1
+  project: <game-bot>_sprint3_sandbox
+  task_type: read_only
+  status: pending
+  task: 'Use Grep para localizar a definição (def) chamada save_event no codebase e reporte o caminho do arquivo.'
+  test_cmd: null
+
+- id: s3-al-07
+  priority: 1
+  project: <gaming-analytics>_sprint3_sandbox
+  task_type: read_only
+  status: pending
+  task: 'Leia src/parser/pipeline.py e responda em uma linha qual é a função principal de orquestração.'
+  test_cmd: null
+
+- id: s3-al-08
+  priority: 1
+  project: <gaming-analytics>_sprint3_sandbox
+  task_type: read_only
+  status: pending
+  task: 'Liste em texto puro todos os arquivos .py em src/analysis.'
+  test_cmd: null
+
+- id: s3-al-09
+  priority: 1
+  project: <gaming-analytics>_sprint3_sandbox
+  task_type: bash_safe
+  status: pending
+  task: 'Use Bash para listar quantos arquivos .py existem em src/ (recursivo) e reporte o número.'
+  test_cmd: null
+
+- id: s3-al-10
+  priority: 1
+  project: <gaming-analytics>_sprint3_sandbox
+  task_type: small_write
+  status: pending
+  task: 'Crie scripts/sprint3_marker.py com o conteúdo: print("sprint3 cs2 ok")'
+  test_cmd: 'python -c "import os; assert os.path.exists(''scripts/sprint3_marker.py''); print(''PASS'')"'
+
+- id: s3-al-11
+  priority: 1
+  project: <gaming-analytics>_sprint3_sandbox
+  task_type: simple_edit
+  status: pending
+  task: 'Edite src/__init__.py (crie se não existir) adicionando como primeira linha: # sprint3-marker'
+  test_cmd: 'python -c "assert open(''src/__init__.py'',encoding=''utf-8'').readline().strip()==''# sprint3-marker''; print(''PASS'')"'
+
+- id: s3-al-12
+  priority: 1
+  project: <gaming-analytics>_sprint3_sandbox
+  task_type: read_only
+  status: pending
+  task: 'Use Grep para localizar a definição (def) chamada extract_situations e reporte o caminho do arquivo.'
+  test_cmd: null
+
+# === TRY_LOCAL_FIRST (12) ===
+
+- id: s3-tl-01
+  priority: 2
+  project: <game-bot>_sprint3_sandbox
+  task_type: read_then_write
+  status: pending
+  task: 'Leia core/__init__.py e crie VERSION.txt na raiz do projeto contendo apenas a string 0.3.0'
+  test_cmd: 'python -c "v=open(''VERSION.txt'').read().strip(); assert v==''0.3.0''; print(''PASS'')"'
+
+- id: s3-tl-02
+  priority: 2
+  project: <game-bot>_sprint3_sandbox
+  task_type: bash_with_analysis
+  status: pending
+  task: 'Use Bash para verificar a versão do Python disponível e responda se é >= 3.10.'
+  test_cmd: null
+
+- id: s3-tl-03
+  priority: 2
+  project: <game-bot>_sprint3_sandbox
+  task_type: multi_file_edit
+  status: pending
+  task: 'Adicione o comentário # sprint3-touch como primeira linha em modules/payment/balance_reader.py E modules/payment/withdrawal_tracker.py'
+  test_cmd: 'python -c "f1=open(''modules/payment/balance_reader.py'',encoding=''utf-8'').readline().strip(); f2=open(''modules/payment/withdrawal_tracker.py'',encoding=''utf-8'').readline().strip(); assert f1==''# sprint3-touch'' and f2==''# sprint3-touch''; print(''PASS'')"'
+
+- id: s3-tl-04
+  priority: 2
+  project: <game-bot>_sprint3_sandbox
+  task_type: read_then_write
+  status: pending
+  task: 'Leia modules/payment/__init__.py e crie modules/payment/SUMMARY.txt contendo a contagem de linhas do __init__.py.'
+  test_cmd: 'python -c "import os; assert os.path.exists(''modules/payment/SUMMARY.txt''); print(''PASS'')"'
+
+- id: s3-tl-05
+  priority: 2
+  project: <game-bot>_sprint3_sandbox
+  task_type: bash_with_analysis
+  status: pending
+  task: 'Use Bash para listar arquivos em scripts/ e reporte se existe algum script começando com sprint3.'
+  test_cmd: null
+
+- id: s3-tl-06
+  priority: 2
+  project: <game-bot>_sprint3_sandbox
+  task_type: multi_file_edit
+  status: pending
+  task: 'Crie dois arquivos novos: docs/sprint3_a.md com texto "## A" e docs/sprint3_b.md com texto "## B".'
+  test_cmd: 'python -c "import os; assert os.path.exists(''docs/sprint3_a.md'') and os.path.exists(''docs/sprint3_b.md''); print(''PASS'')"'
+
+- id: s3-tl-07
+  priority: 2
+  project: <gaming-analytics>_sprint3_sandbox
+  task_type: read_then_write
+  status: pending
+  task: 'Leia src/parser/pipeline.py e crie VERSION.txt na raiz do projeto contendo apenas a string 0.3.0'
+  test_cmd: 'python -c "v=open(''VERSION.txt'').read().strip(); assert v==''0.3.0''; print(''PASS'')"'
+
+- id: s3-tl-08
+  priority: 2
+  project: <gaming-analytics>_sprint3_sandbox
+  task_type: bash_with_analysis
+  status: pending
+  task: 'Use Bash para verificar a versão do Python disponível e responda se é >= 3.10.'
+  test_cmd: null
+
+- id: s3-tl-09
+  priority: 2
+  project: <gaming-analytics>_sprint3_sandbox
+  task_type: multi_file_edit
+  status: pending
+  task: 'Adicione o comentário # sprint3-touch como primeira linha em src/parser/cleaner.py E src/parser/zone_mapper.py'
+  test_cmd: 'python -c "f1=open(''src/parser/cleaner.py'',encoding=''utf-8'').readline().strip(); f2=open(''src/parser/zone_mapper.py'',encoding=''utf-8'').readline().strip(); assert f1==''# sprint3-touch'' and f2==''# sprint3-touch''; print(''PASS'')"'
+
+- id: s3-tl-10
+  priority: 2
+  project: <gaming-analytics>_sprint3_sandbox
+  task_type: read_then_write
+  status: pending
+  task: 'Leia src/analysis/coaching_pipeline.py e crie src/analysis/SUMMARY.txt contendo a contagem de linhas do arquivo lido.'
+  test_cmd: 'python -c "import os; assert os.path.exists(''src/analysis/SUMMARY.txt''); print(''PASS'')"'
+
+- id: s3-tl-11
+  priority: 2
+  project: <gaming-analytics>_sprint3_sandbox
+  task_type: bash_with_analysis
+  status: pending
+  task: 'Use Bash para listar arquivos em scripts/ e reporte se existe algum script começando com sprint3.'
+  test_cmd: null
+
+- id: s3-tl-12
+  priority: 2
+  project: <gaming-analytics>_sprint3_sandbox
+  task_type: multi_file_edit
+  status: pending
+  task: 'Crie dois arquivos novos: docs/sprint3_a.md com texto "## A" e docs/sprint3_b.md com texto "## B".'
+  test_cmd: 'python -c "import os; assert os.path.exists(''docs/sprint3_a.md'') and os.path.exists(''docs/sprint3_b.md''); print(''PASS'')"'
+
+# === DESTRUCTIVE_LOCAL (6) — força isolated:true via Docker isolation_mode ===
+
+- id: s3-dl-01
+  priority: 3
+  project: <game-bot>_sprint3_sandbox
+  task_type: file_deletion
+  destructive: true
+  status: pending
+  task: 'Crie um arquivo temporário tmp_to_delete.txt na raiz e em seguida o delete usando Bash. Confirme que ele não existe mais.'
+  test_cmd: 'python -c "import os; assert not os.path.exists(''tmp_to_delete.txt''); print(''PASS'')"'
+
+- id: s3-dl-02
+  priority: 3
+  project: <game-bot>_sprint3_sandbox
+  task_type: bulk_rename
+  destructive: true
+  status: pending
+  task: 'Crie tres arquivos a1.tmp, a2.tmp, a3.tmp em scripts/ e em seguida renomeie cada um para a Nbak (preservando o numero).'
+  test_cmd: 'python -c "import os; ok=all(os.path.exists(f''scripts/a{i}.bak'') for i in (1,2,3)); assert ok; print(''PASS'')"'
+
+- id: s3-dl-03
+  priority: 3
+  project: <game-bot>_sprint3_sandbox
+  task_type: schema_migration_dry
+  destructive: true
+  status: pending
+  task: 'Em migrations/, crie um arquivo dry_run_sprint3.sql contendo apenas: -- DRY RUN: ALTER TABLE accounts ADD COLUMN sprint3_marker TEXT;'
+  test_cmd: 'python -c "import os; assert os.path.exists(''migrations/dry_run_sprint3.sql''); print(''PASS'')"'
+
+- id: s3-dl-04
+  priority: 3
+  project: <gaming-analytics>_sprint3_sandbox
+  task_type: file_deletion
+  destructive: true
+  status: pending
+  task: 'Crie tmp_to_delete.txt na raiz e em seguida o delete usando Bash. Confirme que ele não existe mais.'
+  test_cmd: 'python -c "import os; assert not os.path.exists(''tmp_to_delete.txt''); print(''PASS'')"'
+
+- id: s3-dl-05
+  priority: 3
+  project: <gaming-analytics>_sprint3_sandbox
+  task_type: bulk_rename
+  destructive: true
+  status: pending
+  task: 'Crie tres arquivos b1.tmp, b2.tmp, b3.tmp em scripts/ e renomeie cada um para b N.bak.'
+  test_cmd: 'python -c "import os; ok=all(os.path.exists(f''scripts/b{i}.bak'') for i in (1,2,3)); assert ok; print(''PASS'')"'
+
+- id: s3-dl-06
+  priority: 3
+  project: <gaming-analytics>_sprint3_sandbox
+  task_type: schema_migration_dry
+  destructive: true
+  status: pending
+  task: 'Crie um arquivo migrations/dry_run_sprint3.sql contendo apenas: -- DRY RUN: ALTER TABLE matches ADD COLUMN sprint3_marker TEXT; (cria a pasta migrations/ se nao existir)'
+  test_cmd: 'python -c "import os; assert os.path.exists(''migrations/dry_run_sprint3.sql''); print(''PASS'')"'
+
+# === ALWAYS_CLAUDE (6) — vão direto a handoff; sprint docs em sprints/claude_tasks/ ===
+
+- id: s3-ac-01
+  priority: 4
+  project: <game-bot>_sprint3_sandbox
+  task_type: long_text_generation
+  status: pending
+  task: 'Escreva docs/sprint3_overview_payment.md (~800 palavras) descrevendo arquitetura do módulo payment, suas dependências e pontos de extensão. Vide sprints/claude_tasks/sprint_3_claude_01.md.'
+  test_cmd: null
+
+- id: s3-ac-02
+  priority: 4
+  project: <game-bot>_sprint3_sandbox
+  task_type: architectural_decision
+  status: pending
+  task: 'Decida ADR sobre estratégia de retry+idempotência cross-module (payment/marketplace/order_fulfillment). Vide sprints/claude_tasks/sprint_3_claude_02.md.'
+  test_cmd: null
+
+- id: s3-ac-03
+  priority: 4
+  project: <game-bot>_sprint3_sandbox
+  task_type: long_text_generation
+  status: pending
+  task: 'Escreva docs/sprint3_runbook_dashboard.md (~700 palavras) com runbook operacional do dashboard. Vide sprints/claude_tasks/sprint_3_claude_03.md.'
+  test_cmd: null
+
+- id: s3-ac-04
+  priority: 4
+  project: <gaming-analytics>_sprint3_sandbox
+  task_type: long_text_generation
+  status: pending
+  task: 'Escreva docs/sprint3_overview_parser.md (~800 palavras) descrevendo o pipeline de parsing CS2. Vide sprints/claude_tasks/sprint_3_claude_04.md.'
+  test_cmd: null
+
+- id: s3-ac-05
+  priority: 4
+  project: <gaming-analytics>_sprint3_sandbox
+  task_type: architectural_decision
+  status: pending
+  task: 'Decida ADR sobre estratégia de versionamento de modelos de similarity/elo_detector. Vide sprints/claude_tasks/sprint_3_claude_05.md.'
+  test_cmd: null
+
+- id: s3-ac-06
+  priority: 4
+  project: <gaming-analytics>_sprint3_sandbox
+  task_type: long_text_generation
+  status: pending
+  task: 'Escreva docs/sprint3_runbook_analysis.md (~700 palavras) com runbook do pipeline analysis. Vide sprints/claude_tasks/sprint_3_claude_06.md.'
+  test_cmd: null

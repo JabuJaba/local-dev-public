@@ -1,0 +1,161 @@
+# delegation_rules.yaml — v0.2 ACTIVE
+# Ativado em Sprint 7 (2026-04-23) após validação empírica completa.
+#
+# Contrato canônico de routing para todos os agentes (local, codex, claude).
+# Substitui routing_rules.yaml como fonte de decisão.
+#
+# Contexto: criado Sprint 4 Phase 2.A; calibrado Sprint 5 Codex + Sprint 6 fit-evaluator.
+# Dados empíricos que sustentam os thresholds:
+#   - Sprint 3 sandbox:   55.6% economia em 36 tasks (routing_rules.yaml baseline)
+#   - Sprint 5 Codex:     3/3 pilots ACEITAR (H1+H4 ativas, escopo mecânico bounded)
+#   - Sprint 6 regression: 5/5 fit-evaluator decisions idênticas ao baseline Sprint 4
+
+schema_version: "0.2"
+status: active                 # ativo — substitui routing_rules.yaml
+supersedes: routing_rules.yaml # routing_rules.yaml mantido como fallback somente leitura
+
+# ---------------------------------------------------------------------------
+# D1–D5: decisões de design travadas no round 2 (2026-04-21)
+# ---------------------------------------------------------------------------
+
+# D1: Schema único partilhado entre agentes (local, codex, claude)
+#     Arquivo: docs/delegation_verdict_schema.md
+#     Caminho: <project_path>/.delegation/verdicts/<task-id>.json
+shared_schema: docs/delegation_verdict_schema.md
+verdict_path_pattern: "<project_path>/.delegation/verdicts/<task-id>.json"
+
+# D2: Agentes suportados e suas capacidades primárias
+agents:
+  local:
+    models:
+      primary: qwen3.6:35b-a3b-q4_k_m
+      secondary: gemma4:26b
+    invocation: "--bare --allowedTools=Read,Edit,Write,Bash,Glob,Grep"
+    max_attempts: 2
+    sandbox_modes: [none, worktree, docker]
+  claude:
+    models: [claude-sonnet-4-6, claude-opus-4-7]
+    sandbox_modes: [none, worktree, docker]
+  codex:
+    notes: "web agent, handoff humano obrigatório, sem API"
+    sandbox_modes: [sandbox-copy]
+
+# D3: Regra determinística de routing — calibração finalizada Sprint 7 (2026-04-23)
+routing_calibration_status: final
+routing_calibration_data:
+  sprint3_sandbox:    "55.6% economia, 36/36 tasks via routing_rules.yaml"
+  sprint5_codex:      "3/3 pilots ACEITAR — H1 (always_local bounded) + H4 (destructive→docker) confirmadas"
+  sprint6_regression: "5/5 fit-evaluator decisions idênticas ao baseline Sprint 4"
+
+# D4: sandbox_mode por agente × destructive
+#     Matriz: (local|claude) × (non-destructive|destructive) × (git-project|non-git)
+sandbox_matrix:
+  local:
+    non_destructive:
+      git_project: worktree          # isolamento por path; rollback: git worktree remove
+      non_git: none                  # safety interceptor cobre
+    destructive: docker              # workspace efêmero Sprint 2.5; não-negociável
+  claude:
+    non_destructive:
+      git_project: worktree
+      non_git: none
+    destructive: docker
+  codex:
+    any: sandbox-copy               # sempre sandbox Codex (isolamento por cópia)
+
+# D5: Métricas comuns entre agentes (schema de comparação cruzada)
+common_metrics:
+  - economy_pct        # (baseline_cost - real_cost) / baseline_cost
+  - outcome            # pass | fail | escalated
+  - retries            # tentativas locais antes de escalação
+  - duration_s
+  - cost_est           # tool-call equivalents (rate-independent)
+  - isolated           # bool — docker/worktree usado?
+  - agent              # local | codex | claude
+
+# ---------------------------------------------------------------------------
+# Routing categories — espelho do routing_rules.yaml com campos adicionais v0.2
+# Não altera a semântica; adiciona rastreabilidade de schema.
+# ---------------------------------------------------------------------------
+
+routing_rules:
+
+  always_local:
+    isolation_mode: none           # host com safety interceptor
+    review_type: none
+    types:
+      - read_only
+      - simple_edit
+      - bash_safe
+      - small_write
+    known_pass_rate: "Sprint 2: 18/20 outcome PASS"
+    # CAVEAT bash_safe: os 18/20 foram medidos via aider/read-edit sintéticos, não Claude Code --bare.
+    # aider usa read/edit internos sem tool-use nativo — comportamento diverge de --bare em task sequencing.
+    # Não usar como baseline quantitativo para estimativas de economia com Claude Code --bare.
+    # Dado válido como indicador de viabilidade de task type, não como taxa de sucesso transferível.
+
+  try_local_first:
+    isolation_mode: none           # host; worktree opcional se projeto é git
+    review_type: light
+    max_local_attempts: 2
+    types:
+      - multi_file_edit            # ≤3 arquivos
+      - bash_with_analysis
+      - read_then_write
+    known_pass_rate: "Sprint 3: 58% desta categoria"
+
+  always_claude:
+    isolation_mode: none           # vai direto para handoff; Claude executa
+    review_type: none
+    types:
+      - long_text_generation       # output >600 palavras: 0/3 modelos locais
+      - generator_coroutine        # send()/throw() — não-determinístico
+      - async_internals
+      - architectural_decision
+      - production_critical
+      - file_deletion              # Sprint 9: migrado de destructive_local — 0/4 resolved em Sprint 8 (FG-17..20); modelo local recusa destrutivas mesmo em Docker
+      - schema_migration_dry       # Sprint 9: migrado de destructive_local
+      - bulk_rename                # Sprint 9: migrado de destructive_local
+      - gui_automation             # pyautogui/win32gui/click — não bash_safe; internals não-acionáveis por modelo local (Sprint 24: stall 15min)
+    handoff_tag: send_claude
+    # destructive_local removido Sprint 9 (2026-04-23): Sprint 8 empírico — FG-17,18,20 escalaram
+    # em <130s (modelo recusou), FG-19 timeout 600s. 0/4 resolved. Comportamento de segurança
+    # do modelo, não bug de infra. Tarefas destrutivas vão direto para Claude Code.
+
+default_category: try_local_first
+destructive_override: always_claude  # Sprint 9: destructive:true no backlog → always_claude (era destructive_local; migrado após Sprint 8: 0/4 resolved)
+critical_override: true              # critical:true no backlog → sempre always_claude
+
+# ---------------------------------------------------------------------------
+# Limites conhecidos (empirical — CLAUDE.md local-dev)
+# ---------------------------------------------------------------------------
+known_limits:
+  long_text_threshold_words: 600
+  confirmed_failures:
+    - long_text_generation    # Sprint 1.5: 3/3 modelos; Sprint 2 task 9: entregou 40 palavras (pedido 800)
+    - generator_coroutine     # Sprint 1.5: falha; Sprint 2 task 10: 1 PASS não-determinístico
+    - async_internals
+    - multi_file_cross_dependency   # refactors que cruzam >3 arquivos com dependencias
+
+pipeline_config:
+  min_pipeline_tokens: 4000   # tasks onde execucao direta Claude < threshold -> bypass pipeline
+  deterministic_router: orchestrator/router_deterministic.py
+
+# ---------------------------------------------------------------------------
+# Maestro local model assignments (Sprint 36b — empirical, benchmark 2026-05-08)
+# ---------------------------------------------------------------------------
+# Winners: gemma4:26b for both roles (16/18 pts planner, 3/3 executor).
+# qwen3.6-64k retained as fallback for tasks requiring >32K context.
+# Swap policy: role_specialized viable (measured swap time: 6s < 30s threshold).
+# Source: benchmark/sprint36b_results.md + orchestrator/VRAM_policy.md
+
+local_model_assignments:
+  planner: gemma4:26b          # 16/18 pts, 67% pass rate, 123s/6tasks, 0 hallucinations
+  executor: gemma4:26b         # 3/3 Bash correctness, 100% pass rate, 56s/3tasks
+  fallback: qwen3.6-64k:latest # >32K context tasks or gemma4 unavailable
+  swap_policy: role_specialized # swap_time=6s; two-model pipelines viable
+
+escalation_triggers:
+  output_word_limit: 600       # executor output >600 words -> escalation_warning in result dict
+  context_kb_limit: 50         # planner task >50KB context -> prefer qwen3.6-64k (64K window)
+  destructive: always_claude   # mirrors routing_rules.always_claude

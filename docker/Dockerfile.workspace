@@ -1,0 +1,32 @@
+FROM python:3.11-slim
+
+WORKDIR /workspace
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        git \
+        ripgrep \
+        ca-certificates \
+        curl \
+        gnupg \
+    && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y --no-install-recommends nodejs \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN pip install --no-cache-dir pyyaml requests
+
+RUN npm install -g @anthropic-ai/claude-code
+
+RUN useradd -m -u 1000 -s /bin/bash dev \
+    && chown -R dev:dev /workspace
+USER dev
+
+ENV HOME=/home/dev \
+    PYTHONIOENCODING=utf-8 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    ANTHROPIC_BASE_URL=http://host.docker.internal:11434 \
+    ANTHROPIC_CUSTOM_MODEL_OPTION=qwen3.6:35b-a3b-q4_k_m
+# ANTHROPIC_AUTH_TOKEN intentionally not baked — pass at runtime:
+#   docker run -e ANTHROPIC_AUTH_TOKEN=ollama ...
+
+CMD ["/bin/bash"]

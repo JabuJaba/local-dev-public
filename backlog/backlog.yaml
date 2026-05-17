@@ -1,0 +1,239 @@
+tasks:
+- id: '001'
+  priority: 1
+  project: <scraper-project>
+  status: done
+  task: 'Adicionar entrada na lista rss_extra do arquivo data/sources_zero_cost.json
+    com os campos: nome=''HuggingFace Blog'', url=''https://huggingface.co/blog/feed.xml'',
+    categoria=''ai_research'', filtro_ativo=false, prioridade=2, notas=''Blog oficial
+    HuggingFace — releases de modelos, papers e tutoriais''. Nao remover nem alterar
+    entradas existentes.'
+  test_cmd: 'python -c "import json; d=json.load(open(''data/sources_zero_cost.json'',
+    encoding=''utf-8'')); extra=d.get(''rss_extra'',[]); urls=[f[''url''] for f in
+    extra]; assert ''https://huggingface.co/blog/feed.xml'' in urls, f''HuggingFace
+    nao encontrado em rss_extra. Encontrado: {urls}''; hf=[f for f in extra if f[''url'']==''https://huggingface.co/blog/feed.xml''][0];
+    assert hf.get(''categoria'')==''ai_research'', f''categoria errada: {hf}''; print(''PASS:
+    HuggingFace feed cadastrado corretamente'')"'
+- blocked_reason: Projeto example-news nao encontrado em <workspace>/ — criar o projeto
+    primeiro
+  id: '002'
+  priority: 2
+  project: example-news
+  status: blocked
+  task: Calibrar threshold de relevância do MiniLM para fontes de notícias — reduzir
+    falsos positivos
+  test_cmd: null
+- blocked_reason: Projeto example-disclosures nao encontrado em <workspace>/ — verificar
+    nome correto do diretorio
+  id: '003'
+  priority: 3
+  project: example-disclosures
+  status: blocked
+  task: Adicionar índice na tabela titulos por campo ISIN para acelerar lookup
+  test_cmd: python -c "import sqlite3; db=sqlite3.connect('example.db'); print(db.execute('SELECT
+    name FROM sqlite_master WHERE type=\'index\'').fetchall())"
+- id: FG-01
+  priority: 4
+  project: <pipeline-project>_rollback_test
+  status: done
+  task: Listar todas as funcoes de validacao em src/validate.py com suas assinaturas
+    (nome, parametros, tipo de retorno se houver). Apenas leitura — nao modificar
+    arquivos.
+  test_cmd: null
+- id: FG-02
+  priority: 4
+  project: <pipeline-project>_rollback_test
+  status: done
+  task: Verificar imports de src/pipeline.py — listar dependencias externas (pacotes
+    PyPI) e internas (modulos do projeto). Apenas leitura — nao modificar arquivos.
+  test_cmd: null
+- id: FG-03
+  priority: 4
+  project: <pipeline-project>_rollback_test
+  status: done
+  task: Ler pytest.ini e verificar se os campos testpaths, markers e addopts estao
+    presentes e corretos. Apenas leitura — nao modificar arquivos.
+  test_cmd: null
+- blocked_since: '2026-04-23T08:42:36.635666'
+  handoff_file: handoffs\<pipeline-project>_rollback_test_20260423_084236.md
+  id: FG-04
+  priority: 4
+  project: <pipeline-project>_rollback_test
+  status: waiting_handoff
+  task: Contar linhas de codigo por modulo em src/ (excluir __pycache__). Usar wc
+    -l ou equivalente. Apenas leitura — nao modificar arquivos.
+  test_cmd: null
+- id: FG-05
+  priority: 4
+  project: <pipeline-project>_rollback_test
+  status: done
+  task: Ler config/force_api_parsers.json e listar todos os tickers que forcam uso
+    da Camada 2 (API). Apenas leitura — nao modificar arquivos.
+  test_cmd: null
+- blocked_since: '2026-04-23T08:53:04.497067'
+  handoff_file: handoffs\<pipeline-project>_rollback_test_20260423_085304.md
+  id: FG-06
+  priority: 4
+  project: <pipeline-project>_rollback_test
+  status: waiting_handoff
+  task: Verificar se a funcao _normalize_indexador em src/cleaner.py possui type hints
+    nos parametros e retorno. Se nao possuir, adicionar type hints adequados. Preservar
+    comportamento existente.
+  test_cmd: 'python -c "src=open(''src/cleaner.py'', encoding=''utf-8'').read(); assert
+    ''_normalize_indexador'' in src, ''funcao nao encontrada''; print(''PASS: _normalize_indexador
+    presente em cleaner.py'')"'
+- id: FG-07
+  priority: 4
+  project: <pipeline-project>_rollback_test
+  status: done
+  task: 'Atualizar PROJECT_STATE.md: alterar o campo "Ultima execucao" para 2026-04-23.
+    Se o campo nao existir, adicionar na secao de estado do projeto.'
+  test_cmd: 'python -c "txt=open(''PROJECT_STATE.md'', encoding=''utf-8'').read();
+    assert ''2026-04-23'' in txt or ''2026-04'' in txt, f''Data nao encontrada. Conteudo:
+    {txt[:200]}''; print(''PASS: data 2026-04-23 presente em PROJECT_STATE.md'')"'
+- blocked_since: '2026-04-23T09:03:54.397410'
+  handoff_file: handoffs\<pipeline-project>_rollback_test_20260423_090354.md
+  id: FG-08
+  priority: 4
+  project: <pipeline-project>_rollback_test
+  status: waiting_handoff
+  task: Verificar se src/validate.py possui logging.info ou logger.info para o caso
+    de veredicto SKIP (quando um ticker e pulado). Se nao houver, adicionar log apropriado
+    quando SKIP e emitido.
+  test_cmd: 'python -c "src=open(''src/validate.py'', encoding=''utf-8'').read();
+    assert ''SKIP'' in src, ''SKIP nao encontrado em validate.py''; print(''PASS:
+    SKIP presente em validate.py'')"'
+- blocked_since: '2026-04-23T09:13:54.506760'
+  handoff_file: handoffs\<pipeline-project>_rollback_test_20260423_091354.md
+  id: FG-09
+  priority: 4
+  project: <pipeline-project>_rollback_test
+  status: waiting_handoff
+  task: Verificar se pipeline.py e pipeline_cpu.py usam o mesmo formato de datefmt
+    no logging.basicConfig. Se diferente, padronizar para usar datefmt="%Y-%m-%d %H:%M:%S"
+    em ambos.
+  test_cmd: 'python -c "import re; p1=open(''src/pipeline.py'',encoding=''utf-8'').read();
+    p2=open(''src/pipeline_cpu.py'',encoding=''utf-8'').read(); print(''PASS: arquivos
+    de pipeline lidos com sucesso'')"'
+- id: FG-10
+  priority: 4
+  project: <pipeline-project>_rollback_test
+  status: done
+  task: Ler src/cleaner.py e verificar se docs/cleaner_rules.md existe e descreve
+    as regras de normalizacao implementadas. Se o arquivo nao existir ou estiver desatualizado,
+    criar/atualizar com resumo das regras (~200 palavras).
+  test_cmd: 'python -c "import os; assert os.path.exists(''docs/cleaner_rules.md''),
+    ''docs/cleaner_rules.md nao encontrado''; content=open(''docs/cleaner_rules.md'',
+    encoding=''utf-8'').read(); assert len(content) > 50, ''arquivo muito curto'';
+    print(''PASS: docs/cleaner_rules.md presente e nao vazio'')"'
+- id: FG-11
+  priority: 4
+  project: <pipeline-project>_rollback_test
+  status: done
+  task: 'Comparar src/validate.py com scripts/validate_prod.py (se existir): identificar
+    funcoes ou checks duplicados entre os dois arquivos e listar as diferencas. Apenas
+    leitura/analise — nao modificar arquivos.'
+  test_cmd: null
+- blocked_since: '2026-04-23T09:30:46.893293'
+  handoff_file: handoffs\<pipeline-project>_rollback_test_20260423_093046.md
+  id: FG-12
+  priority: 4
+  project: <pipeline-project>_rollback_test
+  status: waiting_handoff
+  task: Verificar se a lista _NULOS em src/cleaner.py inclui o sentinel "N/D". Se
+    nao incluir, adicionar "N/D" a lista _NULOS preservando todas as entradas existentes.
+  test_cmd: 'python -c "src=open(''src/cleaner.py'',encoding=''utf-8'').read(); assert
+    ''N/D'' in src, ''N/D nao encontrado em cleaner.py''; print(''PASS: N/D presente
+    em cleaner.py'')"'
+- id: FG-13
+  priority: 4
+  project: <pipeline-project>_rollback_test
+  status: done
+  task: Ler src/ingest_from_<pipeline-project>-source.py e verificar se docs/ingest_call_graph.md existe
+    com diagrama de chamadas. Se nao existir, criar diagrama de texto simples mostrando
+    o fluxo de chamadas principais.
+  test_cmd: 'python -c "import os; assert os.path.exists(''docs/ingest_call_graph.md''),
+    ''docs/ingest_call_graph.md nao encontrado''; print(''PASS: docs/ingest_call_graph.md
+    presente'')"'
+- blocked_since: '2026-04-23T09:46:43.372068'
+  handoff_file: handoffs\<pipeline-project>_rollback_test_20260423_094643.md
+  id: FG-14
+  priority: 4
+  project: <pipeline-project>_rollback_test
+  status: waiting_handoff
+  task: Verificar se src/pipeline_cpu.py e src/validate.py incluem verificacao da
+    coluna dataReferencia antes de processar o dataframe. Se nao incluirem, adicionar
+    verificacao simples (assert ou if check).
+  test_cmd: 'python -c "p=open(''src/pipeline_cpu.py'',encoding=''utf-8'').read();
+    v=open(''src/validate.py'',encoding=''utf-8'').read(); assert ''dataReferencia''
+    in p or ''dataReferencia'' in v, ''dataReferencia nao encontrada''; print(''PASS:
+    dataReferencia verificada nos arquivos'')"'
+- id: FG-15
+  priority: 4
+  project: <pipeline-project>_rollback_test
+  status: done
+  task: 'Executar python scripts/check_parquet_dates.py (se existir) e interpretar
+    a saida: listar tickers com datas OK vs tickers com problema. Se o script nao
+    existir, listar arquivos parquet em data/ e verificar se existem.'
+  test_cmd: null
+- blocked_since: '2026-04-23T09:57:05.126853'
+  handoff_file: handoffs\<pipeline-project>_rollback_test_20260423_095705.md
+  id: FG-16
+  priority: 4
+  project: <pipeline-project>_rollback_test
+  status: waiting_handoff
+  task: Verificar se src/layer1_docling.py e src/layer2_claude.py usam timeout=120
+    nas chamadas de rede/API. Se nao usarem, normalizar para timeout=120 em ambos
+    os arquivos.
+  test_cmd: 'python -c "l1=open(''src/layer1_docling.py'',encoding=''utf-8'').read();
+    l2=open(''src/layer2_claude.py'',encoding=''utf-8'').read(); found=(''timeout''
+    in l1 or ''timeout'' in l2); print(f''PASS: timeout verificado nos arquivos layer'')"'
+- blocked_since: '2026-04-23T09:57:36.523813'
+  destructive: true
+  handoff_file: handoffs\<pipeline-project>_rollback_test_20260423_095736.md
+  id: FG-17
+  priority: 5
+  project: <pipeline-project>_rollback_test
+  status: waiting_handoff
+  task: Remover todos os diretorios __pycache__ de <pipeline-project>_rollback_test/.
+    Usar find ou Get-ChildItem para localizar e remover recursivamente. Confirmar
+    remocao completa.
+  test_cmd: 'python -c "import os; pcaches=list(__import__(''pathlib'').Path(''.'').rglob(''__pycache__''));
+    print(f''__pycache__ restantes: {len(pcaches)}''); assert len(pcaches) == 0, f''Ainda
+    existem __pycache__: {pcaches[:3]}''; print(''PASS: sem __pycache__'')"'
+- blocked_since: '2026-04-23T09:58:16.927081'
+  destructive: true
+  handoff_file: handoffs\<pipeline-project>_rollback_test_20260423_095816.md
+  id: FG-18
+  priority: 5
+  project: <pipeline-project>_rollback_test
+  status: waiting_handoff
+  task: Deletar arquivos temporarios tmp_check.py e tmp_check2.py do diretorio raiz
+    de <pipeline-project>_rollback_test/. Verificar que foram removidos.
+  test_cmd: 'python -c "import os; assert not os.path.exists(''tmp_check.py''), ''tmp_check.py
+    ainda existe''; assert not os.path.exists(''tmp_check2.py''), ''tmp_check2.py
+    ainda existe''; print(''PASS: arquivos temporarios removidos'')"'
+- blocked_since: '2026-04-23T10:08:17.040352'
+  destructive: true
+  handoff_file: handoffs\<pipeline-project>_rollback_test_20260423_100817.md
+  id: FG-19
+  priority: 5
+  project: <pipeline-project>_rollback_test
+  status: waiting_handoff
+  task: Renomear tests/test_parsers.py para tests/test_layer1_parsers.py e tests/test_handoff.py
+    para tests/test_layer2_handoff.py. Usar git mv para preservar historico.
+  test_cmd: 'python -c "import os; assert os.path.exists(''tests/test_layer1_parsers.py''),
+    ''test_layer1_parsers.py nao encontrado''; assert os.path.exists(''tests/test_layer2_handoff.py''),
+    ''test_layer2_handoff.py nao encontrado''; print(''PASS: arquivos renomeados com
+    sucesso'')"'
+- blocked_since: '2026-04-23T10:10:26.501416'
+  destructive: true
+  handoff_file: handoffs\<pipeline-project>_rollback_test_20260423_101026.md
+  id: FG-20
+  priority: 5
+  project: <pipeline-project>_rollback_test
+  status: waiting_handoff
+  task: Limpar _backups/ removendo o backup mais antigo (backup_pre_sprint2_20260421_160414).
+    Confirmar remocao.
+  test_cmd: 'python -c "import os; assert not os.path.exists(''_backups/backup_pre_sprint2_20260421_160414''),
+    ''backup antigo ainda existe''; print(''PASS: backup_pre_sprint2 removido'')"'

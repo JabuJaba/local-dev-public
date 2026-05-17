@@ -1,0 +1,2 @@
+planner=qwen3.6-64k:latest
+executor=gemma4:26b

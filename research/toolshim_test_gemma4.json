@@ -1,0 +1,25 @@
+{
+  "test_date": "2026-05-02",
+  "sprint": "15",
+  "model": "gemma4:26b",
+  "ollama_endpoint": "http://localhost:11434",
+  "tests": [
+    {
+      "id": "T1_v1_messages_anthropic_endpoint",
+      "endpoint": "/v1/messages",
+      "tool_format": "input_schema (Anthropic)",
+      "result": "PASS",
+      "model_emitted": "[{type:thinking, len:666}, {type:tool_use, name:Read, input:{file_path:...}}]",
+      "stop_reason": "tool_use",
+      "expected": "tool_use block with correct input",
+      "note": "Anthropic endpoint works; thinking block present (~666 tokens); same pattern as qwen3.6"
+    }
+  ],
+  "conclusions": {
+    "shim_works": true,
+    "thinking_mode_present": true,
+    "thinking_block_in_response": true,
+    "tool_call_correct": true,
+    "note": "gemma4 also emits thinking blocks via /v1/messages. Same [thinking, tool_use] pattern as qwen3.6. Shim behavior is consistent across both models."
+  }
+}

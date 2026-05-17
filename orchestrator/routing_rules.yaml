@@ -1,0 +1,64 @@
+# Routing rules — Sprint 3 Phase 1
+# Derivado de dados reais Sprint 1.5 / 2 / 2.5.
+#
+# Eixos de decisão por task:
+#   - category    : always_local | try_local_first | destructive_local | always_claude
+#   - isolation_mode: host (safety interceptor cobre) | docker (workspace efêmero)
+#   - review_type : none | light | full   (consumido em Phase 3 do Sprint 3)
+#
+# Critério de confiança: task type com <60% PASS local cai em always_claude.
+
+local_models:
+  primary:
+    slot: ollama
+    tag: qwen3.6:35b-a3b-q4_k_m       # Sprint 2: 18/20 outcome PASS, 9/20 tool_match
+  secondary:
+    slot: gemma4
+    tag: gemma4:26b                    # Sprint 1.5: melhor em Bash, fallback após 2 falhas do primário
+  invocation_flags: "--bare --allowedTools=Read,Edit,Write,Bash,Glob,Grep"
+
+routing_rules:
+
+  always_local:
+    isolation_mode: host
+    review_type: none                  # 100% PASS sem side effects → review=0 tokens Claude
+    types:
+      - read_only                      # Read, Glob, Grep — Sprint 2 tasks 1,3,11,13,18,20: 6/6 PASS
+      - simple_edit                    # Edit ≤50 linhas, 1 arquivo — Sprint 2 tasks 5,15: 2/2 PASS
+      - bash_safe                      # Bash sem rm/del/reset/git clean — Sprint 2 tasks 4,8,12,16: 4/4 PASS
+      - small_write                    # Write arquivo novo <50 linhas — Sprint 2 tasks 14,19: 2/3 PASS (task 6 falhou via echo>file; aceito)
+
+  try_local_first:
+    isolation_mode: host
+    review_type: light                 # ~3 tool-calls Claude (baixo): lint + diff + scope-check
+    max_local_attempts: 2              # após 2 falhas → waiting_handoff com tag escalate_claude
+    max_file_kb: 12                    # Sprint 9: arquivos >12KB → always_claude (cleaner.py 18KB, validate.py 20KB, pipeline_cpu.py 18KB: 300s timeout empírico Sprint 8)
+    types:
+      - multi_file_edit                # Edit em ≤3 arquivos relacionados
+      - bash_with_analysis             # Bash + interpretar output + decidir
+      - read_then_write                # Sprint 2 tasks 7,15: 2/2 PASS
+
+  always_claude:
+    isolation_mode: host               # vai direto pra fila de handoff, sem tentativa local
+    review_type: none                  # Claude faz a task inteira; sem review separado
+    types:
+      - long_text_generation           # Output >600 palavras — Sprint 1.5 task 9 + Sprint 2 task 9: 0/3 modelos atingem
+      - generator_coroutine            # send()/throw() — não-determinístico (Sprint 1.5 falhou, Sprint 2 task 10 PASS por sorte)
+      - async_internals                # asyncio custom event loops, não comum em treino
+      - architectural_decision         # design cross-project
+      - production_critical            # qualquer task em projeto com critical: true no backlog
+      - file_deletion                  # Sprint 9: migrado de destructive_local — modelo local recusa mesmo em Docker (FG-17,18,20: escalou <130s; FG-19: timeout 600s)
+      - schema_migration_dry           # Sprint 9: migrado de destructive_local
+      - bulk_rename                    # Sprint 9: migrado de destructive_local
+
+# Mapeamento: campo `task_type` no backlog.yaml → category acima.
+# Se task não tem task_type, default = try_local_first (conservador, com review leve).
+default_category: try_local_first
+
+# Override: task com `destructive: true` no backlog SEMPRE entra em always_claude
+# (sobrepõe task_type explícito). Sprint 9: migrado de destructive_local após Sprint 8
+# confirmar que modelo local recusa tarefas destrutivas mesmo em Docker (0/4 resolved, FG-17..20).
+destructive_override: always_claude
+
+# Override: projeto com `critical: true` SEMPRE entra em always_claude.
+critical_override: true

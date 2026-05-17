@@ -1,0 +1,82 @@
+endpoints:
+  ollama:
+    base_url: "http://localhost:11434/v1"
+    api_key: "local-only"
+    model: "qwen3coder-local"
+  gemma4:
+    base_url: "http://localhost:11434/v1"
+    api_key: "local-only"
+    model: "gemma4:26b"
+    # Thinking mode is enabled by default via /v1 endpoint. The task_prefix below
+    # asks the model to skip chain-of-thought to avoid thinking tokens leaking into
+    # aider's SEARCH/REPLACE parser.
+    # Ollama auto-unloads qwen3coder-local and loads gemma4 (~10s model switch).
+    task_prefix: "Do not use chain-of-thought or internal reasoning steps. Respond directly with code changes only.\n\n"
+  llama_cpp:
+    base_url: "http://localhost:8081/v1"
+    api_key: "local-only"
+    model: "qwen3-coder-next"
+    # Only used when llama-server is running. Start with: start.ps1 -OnlyLlama
+
+escalation:
+  max_attempts: 3
+  # ollama_attempts: how many attempts use the fast ollama slot before switching to gemma4
+  # Remaining attempts use gemma4 (slot 3 = attempt max_attempts)
+  # Set to 0 to disable gemma4 and use llama_cpp as slot 3 (requires llama-server running)
+  ollama_attempts: 2
+  use_llama_as_final: false     # set true to use llama_cpp on last attempt instead of gemma4
+  # -----------------------------------------------------------------------
+  # Sprint 9 investigation — Gemma4 slot 3 never triggered in Sprint 8 (20/20 tasks)
+  # Root cause: slot 3 requires reaching attempt n=3, but two paths block it:
+  #   1. try_local_first: max_local_attempts=2 caps effective_max=2 → attempt 3 never runs
+  #   2. always_local: effective_max=3 allowed, but should_escalate() fires first:
+  #      - uncertainty phrases on attempt 1 → immediate handoff (0 retries remaining)
+  #      - same_error_twice on attempt 2 → handoff before attempt 3
+  # Conclusion: gemma4 slot 3 is only reachable for always_local tasks that fail without
+  #   uncertainty phrases or identical errors. This is a rare path in practice.
+  # To test slot 3: use --preferred-model=gemma4 (forces slot 1 to gemma4) or set
+  #   ollama_attempts: 0 in this file. For Sprint 9 this path is INTENTIONALLY UNTRIGGERED.
+  # -----------------------------------------------------------------------
+  test_timeout_seconds: 90
+  aider_timeout_seconds: 300   # applies to all attempts; warmup handles cold-start
+
+aider:
+  map_tokens: 512              # default repo-map size; override per-task in backlog.yaml
+  warmup: true                 # ping model before first task to force VRAM load
+  auto_commit: true            # git commit after successful task (message includes task id + model)
+  uncertainty_phrases:
+    - "i'm not sure"
+    - "i don't know how to"
+    - "unable to determine"
+    - "beyond my capabilities"
+    - "i cannot"
+    - "this might require human"
+    - "you may need to manually"
+    - "i'm unable to"
+
+# Parâmetros de inferência Qwen3-Coder (recomendados pela Qwen)
+inference:
+  temperature: 0.7
+  top_p: 0.8
+  top_k: 20
+  repeat_penalty: 1.05
+  num_ctx: 32768
+
+paths:
+  # Adjust projects_root to the parent directory that holds your project folders.
+  # Other paths are relative to the local-dev repo root.
+  projects_root: "../"
+  logs:          "./logs"
+  handoffs:      "./handoffs"
+  backlog:       "./backlog/backlog.yaml"
+
+# % delegável ao local — guia prioridade de modelo
+# Each project key is a directory name under projects_root.
+# local_pct guides routing aggressiveness; test_cmd (if non-null) is the project's regression command.
+projects:
+  example-scraper:         { local_pct: 40, test_cmd: null }
+  example-tutor:           { local_pct: 20, test_cmd: null }
+  example-subtitles:       { local_pct: 50, test_cmd: null }
+  example-analyzer:        { local_pct: 45, test_cmd: null }
+  example-llm-app:         { local_pct: 70, test_cmd: null }
+  example-pipeline:        { local_pct: 45, test_cmd: null }

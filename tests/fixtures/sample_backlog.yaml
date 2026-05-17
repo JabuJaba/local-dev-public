@@ -1,0 +1,22 @@
+tasks:
+  - id: RD-T01
+    task_type: read_only
+    description: "Ler arquivo e retornar conteudo"
+
+  - id: RD-T02
+    task_type: long_text_generation
+    description: "Gerar relatorio de 800 palavras"
+
+  - id: RD-T03
+    task_type: simple_edit
+    critical: true
+    description: "Edicao critica em producao"
+
+  - id: RD-T04
+    task_type: simple_edit
+    file_size_kb: 20
+    preferred_agent: local
+    description: "Editar arquivo grande (>12KB)"
+
+  - id: RD-T05
+    description: "Task sem task_type definido"

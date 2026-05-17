@@ -1,0 +1,7 @@
+FROM models\Qwen3-Coder-Next-Q3_K_M.gguf
+SYSTEM "You are an expert coding assistant. Be concise, direct, and produce working code. Never explain what you are about to do, just do it."
+PARAMETER temperature 0.7
+PARAMETER top_p 0.8
+PARAMETER top_k 20
+PARAMETER repeat_penalty 1.05
+PARAMETER num_ctx 32768

@@ -1,0 +1,51 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Models and binaries
+models/
+llama_cpp/
+*.gguf
+*.safetensors
+*.bin
+
+# Logs
+*.log
+logs/
+
+# Local state / skill artifacts
+.checkpoint*.json
+.diagnose/
+.fixes/
+.gating/
+.eval/
+.delegation/verdicts/
+sanity-cache/
+scratch/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+*~
+.vscode/
+.idea/
+
+# Claude Code per-user
+.claude/settings.local.json
+.claude/scheduled_tasks.lock
+.claude/projects/
+
+# Backups
+*.bak
+*.bak.*

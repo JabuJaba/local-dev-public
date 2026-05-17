@@ -1,0 +1,40 @@
+{
+  "warm_qwen": {
+    "model": "qwen3.6-64k:latest",
+    "cold_load": true,
+    "total_elapsed_s": 15.738237619400024,
+    "load_duration_s": 11.9573015,
+    "tok_s": 17.08118284799857,
+    "prompt_eval_count": 51,
+    "eval_count": 20
+  },
+  "cold_gemma": {
+    "model": "gemma4:26b",
+    "cold_load": true,
+    "total_elapsed_s": 9.090198040008545,
+    "load_duration_s": 6.1784231,
+    "tok_s": 31.530721958940696,
+    "prompt_eval_count": 22,
+    "eval_count": 20
+  },
+  "warm_gemma": {
+    "model": "gemma4:26b",
+    "cold_load": false,
+    "total_elapsed_s": 2.915057420730591,
+    "load_duration_s": 0.1866921,
+    "tok_s": 30.827470975936077,
+    "prompt_eval_count": 22,
+    "eval_count": 20
+  },
+  "cold_qwen_back": {
+    "model": "qwen3.6-64k:latest",
+    "cold_load": true,
+    "total_elapsed_s": 14.183128595352173,
+    "load_duration_s": 10.3380895,
+    "tok_s": 16.888740943518226,
+    "prompt_eval_count": 51,
+    "eval_count": 20
+  },
+  "policy": "role_specialized",
+  "swap_time_s": 6.1784231
+}
