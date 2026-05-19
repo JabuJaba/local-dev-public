@@ -49,3 +49,28 @@ Thumbs.db
 # Backups
 *.bak
 *.bak.*
+
+# === AI_Lab managed hygiene block ===
+__pycache__/
+*.pyc
+.ruff_cache/
+.pytest_cache/
+.mypy_cache/
+venv/
+.venv/
+env/
+node_modules/
+dist/
+build/
+*.log
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+credentials/
+.DS_Store
+Thumbs.db
+# === end managed block ===
